@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Little by Little</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="page-main">
+<div class="sheet">
+  <header class="topbar">
+    <div class="date-block">
+      <div class="date-row">
+        <span class="date-big" id="dateBig">11月7日</span>
+        <span class="date-sub" id="dateSub">周五</span>
+      </div>
+      <div class="date-note" id="dateNote"></div>
+    </div>
+
+    <div class="topbar-spacer"></div>
+
+    <div class="stat" id="stat">
+      <div class="stat-ring"><span id="statDone">0</span><i>/</i><span id="statTotal">0</span></div>
+      <div class="stat-label">已完成</div>
+    </div>
+
+    <div class="nav">
+      <button class="pill-btn quiet" id="bulkBtn" title="一次给好几天加同一件事">批量加</button>
+      <button class="pill-btn quiet" id="sumBtn" title="按名字汇总做完的事">总结</button>
+      <button class="icon-btn" id="prevDay" title="前一天">‹</button>
+      <button class="pill-btn" id="todayBtn">今天</button>
+      <button class="icon-btn" id="nextDay" title="后一天">›</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="timeline-wrap" id="timelineWrap">
+      <div class="tl" id="tl">
+        <div class="tl-empty" id="tlEmpty" hidden>
+          <div>在空白处拖一下，画出要做的事</div>
+          <div class="tl-empty-d">或者点一下 —— 先从一小时开始</div>
+        </div>
+        <div class="tl-hours" id="hours"></div>
+        <div class="tl-grid" id="grid"></div>
+        <div class="tl-blocks" id="blocks"></div>
+        <div class="now-line" id="nowline" hidden><span class="now-label" id="nowLabel"></span></div>
+        <div class="ghost" id="ghost" hidden><span id="ghostLabel"></span></div>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <div class="side-head">
+        <h2>要坚持的事</h2>
+        <button class="icon-btn plus" id="addHabit" title="新增定期任务">＋</button>
+      </div>
+      <div class="habits" id="habits"></div>
+      <div class="side-tip">
+        <b>拖动</b>空白处画出时间段<br>
+        <b>拖边缘</b>改时长，<b>双击</b>改名字
+      </div>
+    </aside>
+  </main>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<div class="modal-backdrop" id="modal" hidden>
+  <form class="modal" id="habitForm" autocomplete="off">
+    <h3 id="modalTitle">新增定期任务</h3>
+
+    <label class="field">
+      <span>做什么</span>
+      <input class="text-input" id="hName" placeholder="比如：健身、读书、练琴" maxlength="24" required>
+    </label>
+
+    <div class="field">
+      <span>一次多久</span>
+      <div class="chips" id="durChips">
+        <button type="button" class="chip" data-min="15">15 分</button>
+        <button type="button" class="chip" data-min="25">25 分</button>
+        <button type="button" class="chip" data-min="45">45 分</button>
+        <button type="button" class="chip is-on" data-min="60">1 小时</button>
+        <button type="button" class="chip" data-min="90">1.5 小时</button>
+      </div>
+      <div class="inline-row">
+        <input class="num-input" id="hMin" type="number" min="5" max="600" step="5" value="60">
+        <span class="muted">分钟</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <span>多久做几次</span>
+      <div class="inline-row">
+        <div class="seg" id="periodSeg">
+          <button type="button" class="seg-btn is-on" data-period="week">每周</button>
+          <button type="button" class="seg-btn" data-period="month">每月</button>
+        </div>
+        <input class="num-input small" id="hTarget" type="number" min="1" max="31" value="3">
+        <span class="muted">次</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <span>安排在</span>
+      <div class="seg" id="preferSeg">
+        <button type="button" class="seg-btn is-on" data-prefer="any">不限</button>
+        <button type="button" class="seg-btn" data-prefer="morning">上午</button>
+        <button type="button" class="seg-btn" data-prefer="afternoon">下午</button>
+        <button type="button" class="seg-btn" data-prefer="evening">晚上</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span>记号笔颜色</span>
+      <div class="swatches" id="swatches"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="danger-btn" id="hDelete" hidden>删除</button>
+      <div class="grow"></div>
+      <button type="button" class="pill-btn" id="hCancel">取消</button>
+      <button type="submit" class="pill-btn solid">保存</button>
+    </div>
+  </form>
+</div>
+
+<div class="modal-backdrop" id="blockModal" hidden>
+  <form class="modal" id="blockForm" autocomplete="off">
+    <h3>这件事</h3>
+
+    <label class="field">
+      <span>做什么</span>
+      <input class="text-input" id="bName" placeholder="比如：和设计对需求" maxlength="60">
+    </label>
+
+    <label class="field">
+      <span>备注</span>
+      <textarea class="text-input area" id="bNote" rows="3" maxlength="400" placeholder="地点、要带的东西、做到什么程度…"></textarea>
+    </label>
+
+    <div class="field">
+      <span>时间</span>
+      <div class="inline-row">
+        <input class="num-input timeish" id="bStart" type="time" step="900">
+        <span class="muted">到</span>
+        <input class="num-input timeish" id="bEnd" type="time" step="900">
+        <span class="muted" id="bDurHint">—</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <span>记号笔颜色</span>
+      <div class="swatches" id="bSwatches"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="danger-btn" id="bDelete">删除</button>
+      <div class="grow"></div>
+      <button type="button" class="pill-btn" id="bCancel">取消</button>
+      <button type="submit" class="pill-btn solid">保存</button>
+    </div>
+  </form>
+</div>
+
+<div class="modal-backdrop" id="sumModal" hidden>
+  <div class="modal wide" id="sumBox">
+    <div class="sum-head">
+      <h3>总结</h3>
+      <div class="seg" id="sumSeg">
+        <button type="button" class="seg-btn is-on" data-span="week">本周</button>
+        <button type="button" class="seg-btn" data-span="month">本月</button>
+        <button type="button" class="seg-btn" data-span="year">本年</button>
+      </div>
+    </div>
+    <div class="sum-range" id="sumRange"></div>
+    <div class="sum-total" id="sumTotal"></div>
+    <div class="sum-list" id="sumList"></div>
+    <div class="modal-actions">
+      <div class="grow"></div>
+      <button type="button" class="pill-btn" id="sumClose">关闭</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-backdrop" id="bulkModal" hidden>
+  <div class="modal bulk-box" id="bulkBox">
+    <h3>批量加日程</h3>
+    <p class="bulk-sub">在日历上点几天，再定一个时间段 —— 这些天各加一条，其余不动。</p>
+
+    <div class="bulk-cols">
+      <section class="bulk-cal">
+        <div class="bulk-cal-head">
+          <button type="button" class="icon-btn" id="bulkPrev" title="上个月">‹</button>
+          <div class="bulk-month" id="bulkMonth"></div>
+          <button type="button" class="icon-btn" id="bulkNext" title="下个月">›</button>
+          <button type="button" class="pill-btn quiet bulk-today" id="bulkToday">回到今天</button>
+        </div>
+
+        <div class="bulk-grid" id="bulkGrid"></div>
+
+        <div class="bulk-quick">
+          <button type="button" class="chip2" id="bulkWork">周中</button>
+          <button type="button" class="chip2" id="bulkRest">周末</button>
+          <div class="bulk-week">
+            <button type="button" class="chip2" id="bulkWeekly">每周…</button>
+            <div class="bulk-week-pop" id="bulkWeekPop" hidden>
+              <button type="button" data-wd="1">一</button>
+              <button type="button" data-wd="2">二</button>
+              <button type="button" data-wd="3">三</button>
+              <button type="button" data-wd="4">四</button>
+              <button type="button" data-wd="5">五</button>
+              <button type="button" data-wd="6">六</button>
+              <button type="button" data-wd="7">日</button>
+            </div>
+          </div>
+          <button type="button" class="chip2" id="bulkClear">清空</button>
+          <span class="bulk-count">已选 <b id="bulkCount">0</b> 天</span>
+        </div>
+
+        <div class="bulk-range">
+          <span class="bulk-range-label">从</span>
+          <input class="num-input bulk-date" id="bulkFrom" type="date">
+          <span class="bulk-range-label">到</span>
+          <input class="num-input bulk-date" id="bulkTo" type="date">
+          <button type="button" class="chip2" id="bulkPickRange">选上这段</button>
+        </div>
+
+        <p class="bulk-tip">点一下选中 · 按住拖过一片连着选 · Shift 点另一个日期选中间整段<br>
+          填了「从 / 到」会先把这段全选上；再点周中、周末、每周几，就只留这段里符合的那些。</p>
+      </section>
+
+      <section class="bulk-form">
+        <label class="field">
+          <span>这件事是什么</span>
+          <input class="text-input" id="bulkTitle" placeholder="例：健身 / 复盘会 / 交作业" autocomplete="off" spellcheck="false">
+        </label>
+
+        <label class="field">
+          <span>每次多长时间</span>
+          <div class="bulk-time">
+            <input class="num-input" id="bulkStart" type="time" value="19:00">
+            <span class="dash">–</span>
+            <input class="num-input" id="bulkEnd" type="time" value="20:00">
+            <span class="bulk-dur" id="bulkDur">1 小时</span>
+          </div>
+        </label>
+
+        <label class="field">
+          <span>备注（可不填）</span>
+          <input class="text-input" id="bulkNote" placeholder="带毛巾、四楼器械区" autocomplete="off" spellcheck="false">
+        </label>
+
+        <div class="field">
+          <span>颜色</span>
+          <div class="swatches" id="bulkSwatches"></div>
+        </div>
+
+        <div class="bulk-sum" id="bulkSum"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="pill-btn" id="bulkCancel">取消</button>
+          <div class="grow"></div>
+          <button type="button" class="pill-btn solid" id="bulkGo" disabled>加到这几天</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
